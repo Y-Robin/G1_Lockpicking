@@ -8,6 +8,26 @@ button presses that moves every pin to its center hole.
 The application runs entirely in the browser. It does not require Python,
 Node.js, a web server, an installation process, or an internet connection.
 
+## Easy Introduction
+
+Use this tool when you encounter a plate lock in the game:
+
+1. Enter how many plates and holes the lock has.
+2. Select the current pin position for every plate.
+3. Configure which plates move together or in opposite directions.
+4. Click **Calculate solution**.
+5. Follow the displayed button presses from the first step to the last.
+
+The direction shown in each solution step refers directly to the keyboard
+button you must press:
+
+- **Press right** means press the `D` key.
+- **Press left** means press the `A` key.
+
+It does **not** describe the direction in which the plate visibly moves in the
+game. The controls are mirrored, so pressing `D` moves the active plate to the
+left, while pressing `A` moves it to the right.
+
 ## Features
 
 - Configure between 1 and 10 plates.
@@ -102,10 +122,16 @@ The result contains:
 
 ## Direction Model
 
-The puzzle uses mirrored controls:
+The direction in the generated solution always describes the required keyboard
+input, not the resulting plate movement:
 
-- Pressing a plate to the **right** physically moves that plate to the left.
-- Pressing a plate to the **left** physically moves that plate to the right.
+- **Press right** means press `D`.
+- **Press left** means press `A`.
+
+The puzzle itself uses mirrored movement:
+
+- Pressing `D` moves the active plate physically to the left.
+- Pressing `A` moves the active plate physically to the right.
 
 Connections are evaluated relative to the physical movement of the active
 plate:
