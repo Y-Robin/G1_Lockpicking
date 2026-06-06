@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="de">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#111822">
-  <title>Schlossknacker – Plattenrätsel lösen</title>
+  <title>Lockpick Solver – Solve Plate Puzzles</title>
   <style>
     :root {
       --bg: #0b1017;
@@ -471,41 +471,41 @@
   <main class="app">
     <header>
       <div>
-        <p class="eyebrow">Interaktiver Löser</p>
-        <h1>Schlossknacker</h1>
-        <p class="intro">Startpositionen und Kopplungen einstellen, anschließend wird der kürzeste Weg zur mittleren Lochposition berechnet.</p>
+        <p class="eyebrow">Interactive solver</p>
+        <h1>Lockpick Solver</h1>
+        <p class="intro">Configure the starting positions and plate connections, then calculate the shortest path to the center position.</p>
       </div>
-      <div class="header-badge">Läuft vollständig lokal im Browser</div>
+      <div class="header-badge">Runs entirely locally in your browser</div>
     </header>
 
-    <section class="toolbar" aria-label="Grundeinstellungen">
+    <section class="toolbar" aria-label="Puzzle settings">
       <div class="field">
-        <label for="plate-count">Anzahl Platten</label>
+        <label for="plate-count">Number of plates</label>
         <div class="number-control">
-          <button type="button" data-change="plates" data-delta="-1" aria-label="Eine Platte weniger">−</button>
+          <button type="button" data-change="plates" data-delta="-1" aria-label="Remove one plate">−</button>
           <input id="plate-count" type="number" min="1" max="10" value="6">
-          <button type="button" data-change="plates" data-delta="1" aria-label="Eine Platte mehr">+</button>
+          <button type="button" data-change="plates" data-delta="1" aria-label="Add one plate">+</button>
         </div>
       </div>
       <div class="field">
-        <label for="hole-count">Anzahl Löcher</label>
+        <label for="hole-count">Number of holes</label>
         <div class="number-control">
-          <button type="button" data-change="holes" data-delta="-2" aria-label="Zwei Löcher weniger">−</button>
+          <button type="button" data-change="holes" data-delta="-2" aria-label="Remove two holes">−</button>
           <input id="hole-count" type="number" min="3" max="15" step="2" value="7">
-          <button type="button" data-change="holes" data-delta="2" aria-label="Zwei Löcher mehr">+</button>
+          <button type="button" data-change="holes" data-delta="2" aria-label="Add two holes">+</button>
         </div>
       </div>
       <div class="toolbar-actions">
-        <button class="button" id="example-button" type="button">Beispiel laden</button>
-        <button class="button primary" id="solve-button" type="button">Lösung berechnen</button>
+        <button class="button" id="example-button" type="button">Load example</button>
+        <button class="button primary" id="solve-button" type="button">Calculate solution</button>
       </div>
     </section>
 
     <section class="workspace">
       <div class="workspace-head" aria-hidden="true">
-        <span>Startposition</span>
-        <span>Platte</span>
-        <span>Verbindungen bei Bewegung</span>
+        <span>Starting position</span>
+        <span>Plate</span>
+        <span>Movement connections</span>
       </div>
       <div class="plates" id="plates"></div>
     </section>
@@ -514,17 +514,17 @@
       <div class="solution-head">
         <div class="solution-title">
           <span class="status-dot" id="status-dot"></span>
-          <h2 id="solution-title">Bereit zur Berechnung</h2>
+          <h2 id="solution-title">Ready to calculate</h2>
         </div>
         <span class="solution-summary" id="solution-summary"></span>
       </div>
       <div id="solution-content">
-        <div class="empty-state">Stelle das Schloss oben ein und klicke auf <strong>Lösung berechnen</strong>.</div>
+        <div class="empty-state">Configure the lock above and click <strong>Calculate solution</strong>.</div>
       </div>
       <div class="legend">
-        <span class="same-key">Gleich: bewegt sich wie die aktive Platte</span>
-        <span class="opposite-key">Entgegen: bewegt sich entgegengesetzt</span>
-        <span class="center-key">Ziel: alle Bolzen in der Mitte</span>
+        <span class="same-key">Same: moves with the active plate</span>
+        <span class="opposite-key">Opposite: moves against the active plate</span>
+        <span class="center-key">Goal: every pin in the center</span>
       </div>
     </section>
   </main>
@@ -596,9 +596,9 @@
         meta.className = "plate-meta";
         meta.innerHTML = `
           <span class="plate-number">${plate + 1}</span>
-          <select class="position-select" aria-label="Startposition Platte ${plate + 1}">
+          <select class="position-select" aria-label="Starting position of plate ${plate + 1}">
             ${Array.from({ length: state.holeCount }, (_, hole) =>
-              `<option value="${hole}" ${state.positions[plate] === hole ? "selected" : ""}>Loch ${hole + 1}</option>`
+              `<option value="${hole}" ${state.positions[plate] === hole ? "selected" : ""}>Hole ${hole + 1}</option>`
             ).join("")}
           </select>
         `;
@@ -606,14 +606,14 @@
         const visual = document.createElement("div");
         visual.className = "plate-visual";
         visual.style.setProperty("--holes", state.holeCount);
-        visual.setAttribute("aria-label", `Platte ${plate + 1}, Bolzen in Loch ${state.positions[plate] + 1}`);
+        visual.setAttribute("aria-label", `Plate ${plate + 1}, pin in hole ${state.positions[plate] + 1}`);
         visual.innerHTML = Array.from({ length: state.holeCount }, (_, hole) => {
           const classes = [
             "hole",
             hole === Math.floor(state.holeCount / 2) ? "center" : "",
             hole === state.positions[plate] ? "active" : ""
           ].filter(Boolean).join(" ");
-          return `<span class="${classes}" title="Loch ${hole + 1}"></span>`;
+          return `<span class="${classes}" title="Hole ${hole + 1}"></span>`;
         }).join("");
 
         const links = document.createElement("div");
@@ -624,11 +624,11 @@
           const selectClass = value === 1 ? "same" : value === -1 ? "opposite" : "";
           return `
             <label class="link-item">
-              <span class="link-label">mit P${other + 1}</span>
-              <select class="link-select ${selectClass}" data-other="${other}" aria-label="Verbindung Platte ${plate + 1} mit Platte ${other + 1}">
-                <option value="0" ${value === 0 ? "selected" : ""}>keine</option>
-                <option value="1" ${value === 1 ? "selected" : ""}>gleich</option>
-                <option value="-1" ${value === -1 ? "selected" : ""}>entgegen</option>
+              <span class="link-label">with P${other + 1}</span>
+              <select class="link-select ${selectClass}" data-other="${other}" aria-label="Connection from plate ${plate + 1} to plate ${other + 1}">
+                <option value="0" ${value === 0 ? "selected" : ""}>none</option>
+                <option value="1" ${value === 1 ? "selected" : ""}>same</option>
+                <option value="-1" ${value === -1 ? "selected" : ""}>opposite</option>
               </select>
             </label>
           `;
@@ -650,9 +650,9 @@
     function clearSolution() {
       solveGeneration++;
       solveButton.disabled = false;
-      solveButton.textContent = "Lösung berechnen";
-      setStatus("", "Bereit zur Berechnung");
-      solutionContent.innerHTML = '<div class="empty-state">Einstellungen geändert. Klicke auf <strong>Lösung berechnen</strong>.</div>';
+      solveButton.textContent = "Calculate solution";
+      setStatus("", "Ready to calculate");
+      solutionContent.innerHTML = '<div class="empty-state">Settings changed. Click <strong>Calculate solution</strong>.</div>';
     }
 
     function updateDimensions() {
@@ -766,7 +766,7 @@
           }
         }
 
-        solutionSummary.textContent = `${parents.size.toLocaleString("de-DE")} Zustände geprüft …`;
+        solutionSummary.textContent = `${parents.size.toLocaleString("en-US")} states checked …`;
         await new Promise(resolve => setTimeout(resolve, 0));
       }
 
@@ -779,25 +779,25 @@
 
     function renderSolution(result) {
       const duration = Math.max(1, Math.round(result.duration));
-      const checked = result.checked.toLocaleString("de-DE");
+      const checked = result.checked.toLocaleString("en-US");
 
       if (result.limited) {
-        setStatus("error", "Suche abgebrochen", `${checked} Zustände · ${duration} ms`);
-        solutionContent.innerHTML = '<div class="empty-state">Das Rätsel ist zu groß oder zu komplex. Die Suche wurde nach 500.000 Zuständen beendet. Reduziere Platten oder Löcher.</div>';
+        setStatus("error", "Search stopped", `${checked} states · ${duration} ms`);
+        solutionContent.innerHTML = '<div class="empty-state">This puzzle is too large or complex. The search stopped after 500,000 states. Reduce the number of plates or holes.</div>';
         return;
       }
 
       if (result.solution === null) {
-        setStatus("error", "Keine Lösung gefunden", `${checked} Zustände · ${duration} ms`);
-        solutionContent.innerHTML = '<div class="empty-state">Mit diesen Startpositionen und Verbindungen kann die Mittelstellung nicht erreicht werden.</div>';
+        setStatus("error", "No solution found", `${checked} states · ${duration} ms`);
+        solutionContent.innerHTML = '<div class="empty-state">The center position cannot be reached with these starting positions and connections.</div>';
         return;
       }
 
       const count = result.solution.length;
-      setStatus("success", count === 0 ? "Schloss ist bereits gelöst" : `Lösung in ${count} ${count === 1 ? "Zug" : "Zügen"}`, `${checked} Zustände · ${duration} ms`);
+      setStatus("success", count === 0 ? "The lock is already solved" : `Solution in ${count} ${count === 1 ? "move" : "moves"}`, `${checked} states · ${duration} ms`);
 
       if (count === 0) {
-        solutionContent.innerHTML = '<div class="empty-state">Alle Platten stehen bereits auf dem mittleren Loch.</div>';
+        solutionContent.innerHTML = '<div class="empty-state">Every plate is already positioned on its center hole.</div>';
         return;
       }
 
@@ -806,8 +806,8 @@
           ${result.solution.map(step => `
             <article class="step">
               <div>
-                <div class="step-action">Platte ${step.plate + 1} nach ${step.direction === 1 ? "rechts" : "links"} drücken</div>
-                <div class="step-state">Positionen: ${step.state.map(position => position + 1).join(" · ")}</div>
+                <div class="step-action">Press plate ${step.plate + 1} to the ${step.direction === 1 ? "right" : "left"}</div>
+                <div class="step-state">Positions: ${step.state.map(position => position + 1).join(" · ")}</div>
               </div>
             </article>
           `).join("")}
@@ -848,15 +848,15 @@
     solveButton.addEventListener("click", async () => {
       const generation = ++solveGeneration;
       solveButton.disabled = true;
-      solveButton.textContent = "Berechnet …";
-      setStatus("working", "Kürzeste Lösung wird gesucht", "0 Zustände geprüft …");
-      solutionContent.innerHTML = '<div class="empty-state">Der Lösungsraum wird systematisch durchsucht.</div>';
+      solveButton.textContent = "Calculating …";
+      setStatus("working", "Searching for the shortest solution", "0 states checked …");
+      solutionContent.innerHTML = '<div class="empty-state">The state space is being searched systematically.</div>';
 
       const result = await solveLock(generation);
       if (result.cancelled || generation !== solveGeneration) return;
 
       solveButton.disabled = false;
-      solveButton.textContent = "Neu berechnen";
+      solveButton.textContent = "Calculate again";
       renderSolution(result);
     });
 
