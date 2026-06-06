@@ -1,0 +1,866 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111822">
+  <title>Schlossknacker – Plattenrätsel lösen</title>
+  <style>
+    :root {
+      --bg: #0b1017;
+      --panel: #121a24;
+      --panel-2: #182330;
+      --line: #2a394a;
+      --text: #eef4fa;
+      --muted: #9eacbc;
+      --accent: #ffb84d;
+      --accent-2: #ffd28c;
+      --cyan: #5dd9d0;
+      --danger: #ff7b75;
+      --success: #6fd59a;
+      --shadow: 0 18px 55px rgba(0, 0, 0, .28);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 15% 0%, rgba(93, 217, 208, .09), transparent 32rem),
+        radial-gradient(circle at 100% 20%, rgba(255, 184, 77, .08), transparent 28rem),
+        var(--bg);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    button, input, select { font: inherit; }
+    button, select { cursor: pointer; }
+
+    .app {
+      width: min(1440px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 34px 0 56px;
+    }
+
+    header {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 28px;
+      margin-bottom: 24px;
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--accent);
+      font-size: .78rem;
+      font-weight: 800;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 5vw, 4.4rem);
+      line-height: .95;
+      letter-spacing: -.055em;
+    }
+
+    .intro {
+      max-width: 610px;
+      margin: 14px 0 0;
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+
+    .header-badge {
+      flex: 0 0 auto;
+      padding: 10px 14px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--muted);
+      background: rgba(18, 26, 36, .75);
+      font-size: .83rem;
+      white-space: nowrap;
+    }
+
+    .toolbar, .workspace, .solution-panel {
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: rgba(18, 26, 36, .92);
+      box-shadow: var(--shadow);
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: end;
+      gap: 16px;
+      padding: 18px;
+      margin-bottom: 18px;
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+    }
+
+    .field label {
+      color: var(--muted);
+      font-size: .76rem;
+      font-weight: 750;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .number-control {
+      display: grid;
+      grid-template-columns: 38px 62px 38px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: var(--panel-2);
+    }
+
+    .number-control button {
+      border: 0;
+      color: var(--text);
+      background: transparent;
+      font-size: 1.2rem;
+    }
+
+    .number-control button:hover { background: rgba(255, 255, 255, .06); }
+
+    .number-control input {
+      width: 100%;
+      border: 0;
+      border-inline: 1px solid var(--line);
+      outline: 0;
+      color: var(--text);
+      background: transparent;
+      text-align: center;
+      appearance: textfield;
+    }
+
+    input::-webkit-inner-spin-button { appearance: none; }
+
+    .toolbar-actions {
+      display: flex;
+      gap: 10px;
+      margin-left: auto;
+    }
+
+    .button {
+      min-height: 42px;
+      padding: 0 17px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      color: var(--text);
+      background: var(--panel-2);
+      font-weight: 750;
+      transition: transform .15s ease, border-color .15s ease, background .15s ease;
+    }
+
+    .button:hover {
+      transform: translateY(-1px);
+      border-color: #40546a;
+    }
+
+    .button.primary {
+      min-width: 150px;
+      border-color: var(--accent);
+      color: #1b1408;
+      background: var(--accent);
+    }
+
+    .button.primary:hover { background: var(--accent-2); }
+    .button:disabled { cursor: wait; opacity: .65; transform: none; }
+
+    .workspace {
+      overflow: hidden;
+      margin-bottom: 18px;
+    }
+
+    .workspace-head {
+      display: grid;
+      grid-template-columns: minmax(150px, .55fr) minmax(360px, 1.45fr) minmax(270px, 1fr);
+      gap: 22px;
+      padding: 13px 20px;
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+      background: rgba(255, 255, 255, .018);
+      font-size: .74rem;
+      font-weight: 800;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    .plates { display: grid; }
+
+    .plate-row {
+      display: grid;
+      grid-template-columns: minmax(150px, .55fr) minmax(360px, 1.45fr) minmax(270px, 1fr);
+      align-items: center;
+      gap: 22px;
+      min-width: 0;
+      padding: 19px 20px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .plate-row:last-child { border-bottom: 0; }
+
+    .plate-meta {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+    }
+
+    .plate-number {
+      display: grid;
+      flex: 0 0 40px;
+      height: 40px;
+      place-items: center;
+      border: 1px solid rgba(255, 184, 77, .4);
+      border-radius: 10px;
+      color: var(--accent);
+      background: rgba(255, 184, 77, .08);
+      font-weight: 850;
+    }
+
+    .position-select {
+      width: 100%;
+      min-height: 40px;
+      padding: 0 34px 0 11px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      outline: 0;
+      color: var(--text);
+      background: var(--panel-2);
+    }
+
+    .position-select:focus, .link-select:focus {
+      border-color: var(--cyan);
+      box-shadow: 0 0 0 3px rgba(93, 217, 208, .12);
+    }
+
+    .plate-visual {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(var(--holes), minmax(22px, 1fr));
+      align-items: center;
+      gap: clamp(6px, 1vw, 12px);
+      min-width: 0;
+      min-height: 58px;
+      padding: 12px clamp(12px, 2vw, 20px);
+      border: 1px solid #3c4a59;
+      border-radius: 12px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.09), transparent 35%),
+        linear-gradient(90deg, #303a44, #222b34 50%, #303a44);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.14), inset 0 -6px 12px rgba(0,0,0,.18);
+    }
+
+    .plate-visual::before,
+    .plate-visual::after {
+      content: "";
+      position: absolute;
+      top: 6px;
+      bottom: 6px;
+      width: 3px;
+      border-radius: 3px;
+      background: rgba(0, 0, 0, .28);
+    }
+
+    .plate-visual::before { left: 5px; }
+    .plate-visual::after { right: 5px; }
+
+    .hole {
+      position: relative;
+      aspect-ratio: 1;
+      max-width: 34px;
+      width: 100%;
+      justify-self: center;
+      border: 2px solid #111820;
+      border-radius: 50%;
+      background: #080d12;
+      box-shadow: inset 0 3px 7px rgba(0,0,0,.9), 0 1px 0 rgba(255,255,255,.12);
+      transition: border-color .15s, background .15s, transform .15s;
+    }
+
+    .hole.center { border-color: rgba(93, 217, 208, .6); }
+
+    .hole.active {
+      border-color: var(--accent);
+      background: radial-gradient(circle at 38% 35%, #fff1ca 0 10%, var(--accent) 12% 52%, #93621d 55% 100%);
+      box-shadow: 0 0 0 4px rgba(255, 184, 77, .11), 0 4px 12px rgba(0,0,0,.45);
+      transform: scale(1.08);
+    }
+
+    .hole.active.center {
+      box-shadow: 0 0 0 4px rgba(111, 213, 154, .13), 0 0 20px rgba(111, 213, 154, .22);
+    }
+
+    .links {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(116px, 1fr));
+      gap: 7px;
+    }
+
+    .link-item {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .link-label {
+      color: var(--muted);
+      font-size: .76rem;
+      font-weight: 750;
+      white-space: nowrap;
+    }
+
+    .link-select {
+      min-width: 0;
+      width: 100%;
+      min-height: 34px;
+      padding: 0 25px 0 8px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      outline: 0;
+      color: var(--muted);
+      background: var(--panel-2);
+      font-size: .79rem;
+    }
+
+    .link-select.same { color: var(--cyan); border-color: rgba(93, 217, 208, .42); }
+    .link-select.opposite { color: var(--accent); border-color: rgba(255, 184, 77, .42); }
+
+    .solution-panel { padding: 20px; }
+
+    .solution-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .solution-title {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--muted);
+      box-shadow: 0 0 0 5px rgba(158, 172, 188, .09);
+    }
+
+    .status-dot.success { background: var(--success); box-shadow: 0 0 0 5px rgba(111, 213, 154, .1); }
+    .status-dot.error { background: var(--danger); box-shadow: 0 0 0 5px rgba(255, 123, 117, .1); }
+    .status-dot.working { background: var(--accent); animation: pulse 1s infinite alternate; }
+
+    @keyframes pulse { to { opacity: .35; } }
+
+    h2 { margin: 0; font-size: 1.05rem; }
+    .solution-summary { color: var(--muted); font-size: .88rem; }
+
+    .empty-state {
+      padding: 34px 18px;
+      border: 1px dashed var(--line);
+      border-radius: 13px;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.55;
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+      gap: 10px;
+      counter-reset: steps;
+    }
+
+    .step {
+      counter-increment: steps;
+      display: grid;
+      grid-template-columns: 38px 1fr;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--panel-2);
+    }
+
+    .step::before {
+      content: counter(steps);
+      display: grid;
+      height: 38px;
+      place-items: center;
+      border-radius: 9px;
+      color: #191208;
+      background: var(--accent);
+      font-weight: 900;
+    }
+
+    .step-action { font-weight: 800; }
+    .step-state {
+      margin-top: 3px;
+      overflow: hidden;
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      font-size: .77rem;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 16px;
+      margin-top: 13px;
+      color: var(--muted);
+      font-size: .78rem;
+    }
+
+    .legend span::before {
+      content: "";
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      margin-right: 7px;
+      border-radius: 50%;
+      background: var(--line);
+    }
+
+    .legend .same-key::before { background: var(--cyan); }
+    .legend .opposite-key::before { background: var(--accent); }
+    .legend .center-key::before { background: var(--success); }
+
+    @media (max-width: 950px) {
+      header { align-items: start; flex-direction: column; }
+      .workspace-head { display: none; }
+      .plate-row {
+        grid-template-columns: 150px minmax(0, 1fr);
+        gap: 14px;
+      }
+      .links { grid-column: 1 / -1; }
+    }
+
+    @media (max-width: 620px) {
+      .app { width: min(100% - 18px, 1440px); padding-top: 22px; }
+      .toolbar-actions { width: 100%; margin-left: 0; }
+      .toolbar-actions .button { flex: 1; }
+      .plate-row { grid-template-columns: 1fr; padding: 16px 12px; }
+      .plate-visual, .links { grid-column: auto; }
+      .plate-visual { min-height: 50px; gap: 5px; padding-inline: 10px; }
+      .hole { min-width: 13px; }
+      .solution-head { align-items: start; flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header>
+      <div>
+        <p class="eyebrow">Interaktiver Löser</p>
+        <h1>Schlossknacker</h1>
+        <p class="intro">Startpositionen und Kopplungen einstellen, anschließend wird der kürzeste Weg zur mittleren Lochposition berechnet.</p>
+      </div>
+      <div class="header-badge">Läuft vollständig lokal im Browser</div>
+    </header>
+
+    <section class="toolbar" aria-label="Grundeinstellungen">
+      <div class="field">
+        <label for="plate-count">Anzahl Platten</label>
+        <div class="number-control">
+          <button type="button" data-change="plates" data-delta="-1" aria-label="Eine Platte weniger">−</button>
+          <input id="plate-count" type="number" min="1" max="10" value="6">
+          <button type="button" data-change="plates" data-delta="1" aria-label="Eine Platte mehr">+</button>
+        </div>
+      </div>
+      <div class="field">
+        <label for="hole-count">Anzahl Löcher</label>
+        <div class="number-control">
+          <button type="button" data-change="holes" data-delta="-2" aria-label="Zwei Löcher weniger">−</button>
+          <input id="hole-count" type="number" min="3" max="15" step="2" value="7">
+          <button type="button" data-change="holes" data-delta="2" aria-label="Zwei Löcher mehr">+</button>
+        </div>
+      </div>
+      <div class="toolbar-actions">
+        <button class="button" id="example-button" type="button">Beispiel laden</button>
+        <button class="button primary" id="solve-button" type="button">Lösung berechnen</button>
+      </div>
+    </section>
+
+    <section class="workspace">
+      <div class="workspace-head" aria-hidden="true">
+        <span>Startposition</span>
+        <span>Platte</span>
+        <span>Verbindungen bei Bewegung</span>
+      </div>
+      <div class="plates" id="plates"></div>
+    </section>
+
+    <section class="solution-panel" aria-live="polite">
+      <div class="solution-head">
+        <div class="solution-title">
+          <span class="status-dot" id="status-dot"></span>
+          <h2 id="solution-title">Bereit zur Berechnung</h2>
+        </div>
+        <span class="solution-summary" id="solution-summary"></span>
+      </div>
+      <div id="solution-content">
+        <div class="empty-state">Stelle das Schloss oben ein und klicke auf <strong>Lösung berechnen</strong>.</div>
+      </div>
+      <div class="legend">
+        <span class="same-key">Gleich: bewegt sich wie die aktive Platte</span>
+        <span class="opposite-key">Entgegen: bewegt sich entgegengesetzt</span>
+        <span class="center-key">Ziel: alle Bolzen in der Mitte</span>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const plateCountInput = document.querySelector("#plate-count");
+    const holeCountInput = document.querySelector("#hole-count");
+    const platesContainer = document.querySelector("#plates");
+    const solveButton = document.querySelector("#solve-button");
+    const exampleButton = document.querySelector("#example-button");
+    const solutionTitle = document.querySelector("#solution-title");
+    const solutionSummary = document.querySelector("#solution-summary");
+    const solutionContent = document.querySelector("#solution-content");
+    const statusDot = document.querySelector("#status-dot");
+
+    const example = {
+      plates: 6,
+      holes: 7,
+      positions: [1, 0, 5, 4, 3, 6],
+      links: {
+        0: {},
+        1: { 2: 1, 4: -1 },
+        2: {},
+        3: { 1: 1, 4: -1 },
+        4: { 1: -1, 2: 1, 5: -1 },
+        5: { 4: 1 }
+      }
+    };
+
+    let state = createState(example.plates, example.holes);
+    let solveGeneration = 0;
+
+    function clamp(value, min, max) {
+      return Math.min(max, Math.max(min, Number(value) || min));
+    }
+
+    function normalizeHoleCount(value) {
+      let holes = clamp(value, 3, 15);
+      if (holes % 2 === 0) holes += holes === 15 ? -1 : 1;
+      return holes;
+    }
+
+    function createState(plateCount, holeCount, previous = null) {
+      const center = Math.floor(holeCount / 2);
+      const positions = Array.from(
+        { length: plateCount },
+        (_, index) => previous?.positions[index] === undefined
+          ? center
+          : clamp(previous.positions[index], 0, holeCount - 1)
+      );
+      const links = Array.from({ length: plateCount }, (_, plate) =>
+        Array.from({ length: plateCount }, (_, other) =>
+          plate === other ? 0 : previous?.links[plate]?.[other] || 0
+        )
+      );
+      return { plateCount, holeCount, positions, links };
+    }
+
+    function renderPlates() {
+      platesContainer.innerHTML = "";
+      const fragment = document.createDocumentFragment();
+
+      for (let plate = 0; plate < state.plateCount; plate++) {
+        const row = document.createElement("article");
+        row.className = "plate-row";
+        row.dataset.plate = plate;
+
+        const meta = document.createElement("div");
+        meta.className = "plate-meta";
+        meta.innerHTML = `
+          <span class="plate-number">${plate + 1}</span>
+          <select class="position-select" aria-label="Startposition Platte ${plate + 1}">
+            ${Array.from({ length: state.holeCount }, (_, hole) =>
+              `<option value="${hole}" ${state.positions[plate] === hole ? "selected" : ""}>Loch ${hole + 1}</option>`
+            ).join("")}
+          </select>
+        `;
+
+        const visual = document.createElement("div");
+        visual.className = "plate-visual";
+        visual.style.setProperty("--holes", state.holeCount);
+        visual.setAttribute("aria-label", `Platte ${plate + 1}, Bolzen in Loch ${state.positions[plate] + 1}`);
+        visual.innerHTML = Array.from({ length: state.holeCount }, (_, hole) => {
+          const classes = [
+            "hole",
+            hole === Math.floor(state.holeCount / 2) ? "center" : "",
+            hole === state.positions[plate] ? "active" : ""
+          ].filter(Boolean).join(" ");
+          return `<span class="${classes}" title="Loch ${hole + 1}"></span>`;
+        }).join("");
+
+        const links = document.createElement("div");
+        links.className = "links";
+        links.innerHTML = Array.from({ length: state.plateCount }, (_, other) => {
+          if (other === plate) return "";
+          const value = state.links[plate][other];
+          const selectClass = value === 1 ? "same" : value === -1 ? "opposite" : "";
+          return `
+            <label class="link-item">
+              <span class="link-label">mit P${other + 1}</span>
+              <select class="link-select ${selectClass}" data-other="${other}" aria-label="Verbindung Platte ${plate + 1} mit Platte ${other + 1}">
+                <option value="0" ${value === 0 ? "selected" : ""}>keine</option>
+                <option value="1" ${value === 1 ? "selected" : ""}>gleich</option>
+                <option value="-1" ${value === -1 ? "selected" : ""}>entgegen</option>
+              </select>
+            </label>
+          `;
+        }).join("");
+
+        row.append(meta, visual, links);
+        fragment.append(row);
+      }
+
+      platesContainer.append(fragment);
+    }
+
+    function setStatus(type, title, summary = "") {
+      statusDot.className = `status-dot${type ? ` ${type}` : ""}`;
+      solutionTitle.textContent = title;
+      solutionSummary.textContent = summary;
+    }
+
+    function clearSolution() {
+      solveGeneration++;
+      solveButton.disabled = false;
+      solveButton.textContent = "Lösung berechnen";
+      setStatus("", "Bereit zur Berechnung");
+      solutionContent.innerHTML = '<div class="empty-state">Einstellungen geändert. Klicke auf <strong>Lösung berechnen</strong>.</div>';
+    }
+
+    function updateDimensions() {
+      const plateCount = clamp(plateCountInput.value, 1, 10);
+      const holeCount = normalizeHoleCount(holeCountInput.value);
+      plateCountInput.value = plateCount;
+      holeCountInput.value = holeCount;
+      state = createState(plateCount, holeCount, state);
+      renderPlates();
+      clearSolution();
+    }
+
+    function loadExample() {
+      plateCountInput.value = example.plates;
+      holeCountInput.value = example.holes;
+      state = createState(example.plates, example.holes);
+      state.positions = [...example.positions];
+      for (const [plate, connections] of Object.entries(example.links)) {
+        for (const [other, sign] of Object.entries(connections)) {
+          state.links[Number(plate)][Number(other)] = sign;
+        }
+      }
+      renderPlates();
+      clearSolution();
+    }
+
+    function applyPress(current, plate, pressDirection) {
+      const physicalDirection = -pressDirection;
+      const next = [...current];
+      next[plate] += physicalDirection;
+
+      for (let other = 0; other < state.plateCount; other++) {
+        const sign = state.links[plate][other];
+        if (sign) next[other] += physicalDirection * sign;
+      }
+
+      if (next.some(position => position < 0 || position >= state.holeCount)) {
+        return null;
+      }
+      return next;
+    }
+
+    function stateKey(lockState) {
+      return lockState.join(",");
+    }
+
+    function reconstructSolution(parents, finalKey) {
+      const steps = [];
+      let key = finalKey;
+      while (parents.get(key)?.previous !== null) {
+        const entry = parents.get(key);
+        steps.push({
+          plate: entry.plate,
+          direction: entry.direction,
+          state: key.split(",").map(Number)
+        });
+        key = entry.previous;
+      }
+      return steps.reverse();
+    }
+
+    async function solveLock(generation) {
+      const center = Math.floor(state.holeCount / 2);
+      const target = Array(state.plateCount).fill(center);
+      const targetKey = stateKey(target);
+      const start = [...state.positions];
+      const startKey = stateKey(start);
+      const queue = [start];
+      const parents = new Map([[startKey, { previous: null }]]);
+      let queueIndex = 0;
+      const maxStates = 500000;
+      const startedAt = performance.now();
+
+      if (startKey === targetKey) {
+        return { solution: [], checked: 1, duration: performance.now() - startedAt };
+      }
+
+      while (queueIndex < queue.length) {
+        if (generation !== solveGeneration) return { cancelled: true };
+
+        const chunkEnd = Math.min(queueIndex + 2500, queue.length);
+        for (; queueIndex < chunkEnd; queueIndex++) {
+          const current = queue[queueIndex];
+          const currentKey = stateKey(current);
+
+          for (let plate = 0; plate < state.plateCount; plate++) {
+            for (const direction of [-1, 1]) {
+              const next = applyPress(current, plate, direction);
+              if (!next) continue;
+              const key = stateKey(next);
+              if (parents.has(key)) continue;
+
+              parents.set(key, { previous: currentKey, plate, direction });
+              if (key === targetKey) {
+                return {
+                  solution: reconstructSolution(parents, key),
+                  checked: parents.size,
+                  duration: performance.now() - startedAt
+                };
+              }
+
+              queue.push(next);
+              if (parents.size >= maxStates) {
+                return {
+                  limited: true,
+                  checked: parents.size,
+                  duration: performance.now() - startedAt
+                };
+              }
+            }
+          }
+        }
+
+        solutionSummary.textContent = `${parents.size.toLocaleString("de-DE")} Zustände geprüft …`;
+        await new Promise(resolve => setTimeout(resolve, 0));
+      }
+
+      return {
+        solution: null,
+        checked: parents.size,
+        duration: performance.now() - startedAt
+      };
+    }
+
+    function renderSolution(result) {
+      const duration = Math.max(1, Math.round(result.duration));
+      const checked = result.checked.toLocaleString("de-DE");
+
+      if (result.limited) {
+        setStatus("error", "Suche abgebrochen", `${checked} Zustände · ${duration} ms`);
+        solutionContent.innerHTML = '<div class="empty-state">Das Rätsel ist zu groß oder zu komplex. Die Suche wurde nach 500.000 Zuständen beendet. Reduziere Platten oder Löcher.</div>';
+        return;
+      }
+
+      if (result.solution === null) {
+        setStatus("error", "Keine Lösung gefunden", `${checked} Zustände · ${duration} ms`);
+        solutionContent.innerHTML = '<div class="empty-state">Mit diesen Startpositionen und Verbindungen kann die Mittelstellung nicht erreicht werden.</div>';
+        return;
+      }
+
+      const count = result.solution.length;
+      setStatus("success", count === 0 ? "Schloss ist bereits gelöst" : `Lösung in ${count} ${count === 1 ? "Zug" : "Zügen"}`, `${checked} Zustände · ${duration} ms`);
+
+      if (count === 0) {
+        solutionContent.innerHTML = '<div class="empty-state">Alle Platten stehen bereits auf dem mittleren Loch.</div>';
+        return;
+      }
+
+      solutionContent.innerHTML = `
+        <div class="steps">
+          ${result.solution.map(step => `
+            <article class="step">
+              <div>
+                <div class="step-action">Platte ${step.plate + 1} nach ${step.direction === 1 ? "rechts" : "links"} drücken</div>
+                <div class="step-state">Positionen: ${step.state.map(position => position + 1).join(" · ")}</div>
+              </div>
+            </article>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    platesContainer.addEventListener("change", event => {
+      const row = event.target.closest(".plate-row");
+      if (!row) return;
+      const plate = Number(row.dataset.plate);
+
+      if (event.target.matches(".position-select")) {
+        state.positions[plate] = Number(event.target.value);
+        renderPlates();
+      }
+
+      if (event.target.matches(".link-select")) {
+        const other = Number(event.target.dataset.other);
+        state.links[plate][other] = Number(event.target.value);
+        event.target.className = `link-select${event.target.value === "1" ? " same" : event.target.value === "-1" ? " opposite" : ""}`;
+      }
+      clearSolution();
+    });
+
+    document.querySelectorAll("[data-change]").forEach(button => {
+      button.addEventListener("click", () => {
+        const input = button.dataset.change === "plates" ? plateCountInput : holeCountInput;
+        input.value = Number(input.value) + Number(button.dataset.delta);
+        updateDimensions();
+      });
+    });
+
+    plateCountInput.addEventListener("change", updateDimensions);
+    holeCountInput.addEventListener("change", updateDimensions);
+    exampleButton.addEventListener("click", loadExample);
+
+    solveButton.addEventListener("click", async () => {
+      const generation = ++solveGeneration;
+      solveButton.disabled = true;
+      solveButton.textContent = "Berechnet …";
+      setStatus("working", "Kürzeste Lösung wird gesucht", "0 Zustände geprüft …");
+      solutionContent.innerHTML = '<div class="empty-state">Der Lösungsraum wird systematisch durchsucht.</div>';
+
+      const result = await solveLock(generation);
+      if (result.cancelled || generation !== solveGeneration) return;
+
+      solveButton.disabled = false;
+      solveButton.textContent = "Neu berechnen";
+      renderSolution(result);
+    });
+
+    loadExample();
+  </script>
+</body>
+</html>
